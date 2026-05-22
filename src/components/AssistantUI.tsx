@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowUpRight, Paperclip, Mic, Sparkles, User, Bot } from "lucide-react";
+import { ArrowUpRight, Sparkles, User, Bot } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { sendMessageStream } from "../services/geminiService";
@@ -178,17 +178,6 @@ export default function AssistantUI() {
               className="p-3 bg-electric-blue text-black rounded-xl hover:scale-[1.03] active:scale-95 transition-all shadow-[0_0_25px_rgba(0,209,255,0.3)] disabled:opacity-20 disabled:scale-100 disabled:grayscale cursor-pointer disabled:cursor-not-allowed"
             >
               <ArrowUpRight className="w-6 h-6 border-black" />
-            </button>
-          </div>
-
-          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-12">
-            <button className="flex items-center gap-2 text-[9px] font-mono font-bold tracking-[0.3em] text-zinc-700 uppercase hover:text-zinc-400 transition-colors group/btn">
-              <Paperclip className="w-3 h-3 group-hover/btn:text-electric-blue" />
-              Attach
-            </button>
-            <button className="flex items-center gap-2 text-[9px] font-mono font-bold tracking-[0.3em] text-zinc-700 uppercase hover:text-zinc-400 transition-colors group/btn">
-              <Mic className="w-3 h-3 group-hover/btn:text-vibrant-purple" />
-              Voice
             </button>
           </div>
         </div>
