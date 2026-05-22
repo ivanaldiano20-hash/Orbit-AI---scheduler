@@ -1,8 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Ensure the application does not crash in environments (like Vercel production) where process.env is not defined
-const apiKey = typeof process !== "undefined" && process.env ? (process.env.GEMINI_API_KEY || "") : "";
-const ai = new GoogleGenAI({ apiKey });
+// Vite's define plugin replaces 'process.env.GEMINI_API_KEY' as a literal expression at build time.
+// We reference it directly here so the replacement is bundled correctly into the browser application environment.
+const apiKey = process.env.GEMINI_API_KEY || "";
+const ai = new GoogleGenAI({ 
+  apiKey,
+  httpOptions: {
+    headers: {
+      'User-Agent': 'aistudio-build',
+    }
+  }
+});
 
 export async function* sendMessageStream(prompt: string, history: { role: 'user' | 'model', parts: { text: string }[] }[] = []) {
   try {
@@ -11,7 +19,7 @@ export async function* sendMessageStream(prompt: string, history: { role: 'user'
     const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     const chat = ai.chats.create({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.5-flash",
       history: history,
       config: {
         systemInstruction: `You are Orbit AI, a sophisticated AI command center. Your personality is 'Transcendent Minimalism': advanced yet invisible. Be concise, intelligent, and helpful. 
