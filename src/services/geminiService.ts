@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Ensure the application does not crash in environments (like Vercel production) where process.env is not defined
+const apiKey = typeof process !== "undefined" && process.env ? (process.env.GEMINI_API_KEY || "") : "";
+const ai = new GoogleGenAI({ apiKey });
 
 export async function* sendMessageStream(prompt: string, history: { role: 'user' | 'model', parts: { text: string }[] }[] = []) {
   try {
