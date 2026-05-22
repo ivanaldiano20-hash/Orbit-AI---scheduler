@@ -30,17 +30,19 @@ app.get("/api/health", (req, res) => {
 app.post("/api/gemini/chat", async (req, res) => {
   const { prompt, history = [] } = req.body;
 
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-
   try {
+    if (!apiKey) {
+      return res.status(500).json({ 
+        error: "GEMINI_API_KEY is not defined in your environment settings on the server side. Please ensure the Gemini API key is configured in the AI Studio Settings > Secrets panel." 
+      });
+    }
+
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
     const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     const chat = ai.chats.create({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       history: history,
       config: {
         systemInstruction: `You are Orbit AI, a sophisticated AI command center. Your personality is 'Transcendent Minimalism': advanced yet invisible. Be concise, intelligent, and helpful. 
@@ -64,6 +66,11 @@ app.post("/api/gemini/chat", async (req, res) => {
       message: prompt
     });
 
+    // Send HTTP headers ONLY after we start the streaming successfully to support correct 500 error propagation
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
     for await (const chunk of result) {
       if (chunk.text) {
         res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
@@ -71,10 +78,14 @@ app.post("/api/gemini/chat", async (req, res) => {
     }
     res.write("data: [DONE]\n\n");
     res.end();
-  } catch (error) {
+  } catch (error: any) {
     console.error("Express Gemini Error:", error);
-    res.write(`data: ${JSON.stringify({ text: "I encountered a synchronization error. Please check your neural link." })}\n\n`);
-    res.end();
+    if (res.headersSent) {
+      res.write(`data: ${JSON.stringify({ text: `\n\n[Synchronization Error: ${error?.message || error}]` })}\n\n`);
+      res.end();
+    } else {
+      res.status(500).json({ error: error?.message || String(error) });
+    }
   }
 });
 

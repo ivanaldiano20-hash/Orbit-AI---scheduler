@@ -16,7 +16,8 @@ export async function* sendMessageStream(
     });
 
     if (!response.ok) {
-      throw new Error(`Server returned status: ${response.status}`);
+      const errorJson = await response.json().catch(() => ({}));
+      throw new Error(errorJson.error || `Server returned status: ${response.status}`);
     }
 
     const reader = response.body?.getReader();
@@ -60,7 +61,11 @@ export async function* sendMessageStream(
       const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
       if (!apiKey) {
-        yield "I encountered a synchronization error: GEMINI_API_KEY is not defined in your environment settings.";
+        yield `I encountered a synchronization error: GEMINI_API_KEY is not defined in your environment settings.
+
+Please make sure you have added your Gemini API key in the bottom-left sidebar of Google AI Studio (under the **Settings (Gear icon) > Secrets** panel or the **API Key** button in the header), then refresh the page.
+
+*(Technical details: ${error instanceof Error ? error.message : String(error)})*`;
         return;
       }
 
@@ -74,7 +79,7 @@ export async function* sendMessageStream(
       });
 
       const chat = ai.chats.create({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         history: history,
         config: {
           systemInstruction: `You are Orbit AI, a sophisticated AI command center. Your personality is 'Transcendent Minimalism': advanced yet invisible. Be concise, intelligent, and helpful. 
